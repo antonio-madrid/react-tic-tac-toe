@@ -5,8 +5,7 @@ export default function Game() {
     const [history, setHistory] = useState([Array(9).fill(null)]);
     const [currentMove, setCurrentMove] = useState(0);
     const xIsNext = currentMove % 2 === 0;
-    const currentSquares = history[currentMove];
-    const [isLastMove, setIsLastMove] = useState(true);
+    let currentSquares = history[currentMove];
 
     function handlePlay(nextSquares) {
         const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -15,22 +14,30 @@ export default function Game() {
     }
 
     function jumpTo(nextMove) {
+        if (nextMove === 0) {
+            setHistory([Array(9).fill(null)])
+        }
+        setHistory(history.slice(0, nextMove + 1))
         setCurrentMove(nextMove);
     }
 
     const moves = history.map((squares, move) => {
-        let description;
-        if (move > 0) {
-            description = `Go to move #${move}`;
-        } else {
-            description = `Go to game start`;
+
+        if (history.length !== 1 && move === history.length - 1) {
+            return <p key={move}>You are at move: {move}</p>
         }
 
-        return (
-            <li key={move}>
-                <button onClick={() => jumpTo(move)}>{description}</button>
-            </li>
-        );
+        let description;
+        if (move === 0 && history.length !== 1) description = `Go to game start`;
+        if (move > 0) description = `Go to move #${move}`;
+
+        if (move >= 0 && history.length !== 1) {
+            return (
+                <li key={move}>
+                    <button onClick={() => jumpTo(move)}>{description}</button>
+                </li>
+            );
+        }
     });
 
     return (
