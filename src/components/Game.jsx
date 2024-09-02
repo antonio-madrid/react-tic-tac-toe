@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Board from "./Board.jsx";
 
 export default function Game() {
@@ -6,6 +6,7 @@ export default function Game() {
     const [currentMove, setCurrentMove] = useState(0);
     const xIsNext = currentMove % 2 === 0;
     let currentSquares = history[currentMove];
+    const [isAscending, setIsAscending] = useState(true);
 
     function handlePlay(nextSquares) {
         const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -20,25 +21,32 @@ export default function Game() {
         setHistory(history.slice(0, nextMove + 1))
         setCurrentMove(nextMove);
     }
+    function getMoves() {
+        let moves = history.map((squares, move) => {
 
-    const moves = history.map((squares, move) => {
+            let description;
+            if (move === 0 && history.length !== 1) description = `Go to game start`;
+            if (move > 0) description = `Go to move #${move}`;
 
-        if (history.length !== 1 && move === history.length - 1) {
-            return <p key={move}>You are at move: {move}</p>
+            if (move >= 0 && history.length !== 1) {
+                return (
+                    <li key={move}>
+                        <button onClick={() => jumpTo(move)}>{description}</button>
+                    </li>
+                );
+            }
+        });
+
+        if (!isAscending) {
+            moves = moves.reverse();
         }
 
-        let description;
-        if (move === 0 && history.length !== 1) description = `Go to game start`;
-        if (move > 0) description = `Go to move #${move}`;
+        return moves;
+    }
 
-        if (move >= 0 && history.length !== 1) {
-            return (
-                <li key={move}>
-                    <button onClick={() => jumpTo(move)}>{description}</button>
-                </li>
-            );
-        }
-    });
+    function toggleSortOrder() {
+        setIsAscending(!isAscending);
+    }
 
     return (
         <div className="game">
@@ -46,7 +54,16 @@ export default function Game() {
                 <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
             </div>
             <div className="game">
-                <ol>{moves}</ol>
+                <ol>
+                    {history.length !== 1 && currentMove === history.length - 1 &&
+                        <p>You are at move: {currentMove}</p>}
+                    {history.length !== 1 && currentMove === history.length - 1 &&
+                        <button onClick={toggleSortOrder}>
+                            {isAscending ? 'Sort Descending' : 'Sort Ascending'}
+                        </button>
+                    }
+                    {getMoves()}
+                </ol>
             </div>
         </div>
     )
